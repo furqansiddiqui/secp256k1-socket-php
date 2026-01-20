@@ -1,0 +1,31 @@
+{
+  "name": "furqansiddiqui/secp256k1-socket-php",
+  "description": "Unix-socket IPC service and PHP client for secp256k1 key generation, signing, and verification",
+  "type": "library",
+  "homepage": "https://github.com/furqansiddiqui/secp256k1-socket-php",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Furqan A. Siddiqui",
+      "email": "hello@furqansiddiqui.com",
+      "homepage": "https://www.furqansiddiqui.com",
+      "role": "Author"
+    }
+  ],
+  "require": {
+    "php": "^8.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "FurqanSiddiqui\\Crypto\\Secp256k1\\": [
+        "src"
+      ]
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "FurqanSiddiqui\\Crypto\\Secp256k1\\Tests\\": "tests/"
+    }
+  },
+  "minimum-stability": "dev"
+}
