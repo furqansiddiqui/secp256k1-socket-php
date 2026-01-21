@@ -76,7 +76,7 @@ final class Secp256k1Server
             );
         }
 
-        $this->writeLog(sprintf("{green}Secp256k1 Socket Server{/} started with PID {magenta}%d{/}",
+        $this->writeLog(sprintf("{green}Secp256k1 Server{/} started with PID {magenta}%d{/}",
             getmypid()));
     }
 
@@ -168,7 +168,7 @@ final class Secp256k1Server
         }
 
         if ($this->workers === null) {
-            $this->writeLog(sprintf("{cyan}Worker{/} on PID {magenta}%d{/} terminated: {red}%d{/}",
+            $this->writeLog(sprintf("{cyan}Secp256k1 Worker{/} on PID {blue}%d{/} terminated: {red}%d{/}",
                 getmypid(), $sigId));
             exit(0);
         }
