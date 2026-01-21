@@ -105,32 +105,19 @@ final class Secp256k1Server
             }
 
             if ($workerExited > 0) {
+                unset($this->workers[$workerExited]);
                 if ($this->terminated) {
-                    break;
+                    if (!$this->workers) {
+                        break;
+                    }
+
+                    continue;
                 }
 
-                // Todo: Log message worker exited
-                unset($this->workers[$workerExited]);
                 $this->spawnWorkerProcess();
             }
         }
-    }
 
-    /**
-     * @param int $sigId
-     * @return never
-     */
-    private function terminate(int $sigId): never
-    {
-        $this->terminated = true;
-        if ($this->workers) {
-            foreach (array_keys($this->workers) as $workerPid) {
-                posix_kill($workerPid, SIGTERM);
-            }
-        }
-
-        $this->writeLog(sprintf("{green}%s{/} on PID {magenta}%d{/} terminated: {red}%d{/}",
-            $this->workers === null ? "Worker" : "Secp256k1 Server", getmypid(), $sigId));
         exit(0);
     }
 
@@ -145,7 +132,7 @@ final class Secp256k1Server
             throw new WorkerSpawnException("Failed to spawn a worker process");
         } else if ($workerPid === 0) {
             $this->workers = null;
-            $this->writeLog(sprintf("{cyan}Secp256k1 Socket Worker{/} spawned with PID {magenta}%d{/}", getmypid()));
+            $this->writeLog(sprintf("{cyan}Secp256k1 Worker{/} spawned with PID {magenta}%d{/}", getmypid()));
             while (true) {
                 pcntl_signal_dispatch();
                 $client = @stream_socket_accept($this->socket, 1);
@@ -165,6 +152,27 @@ final class Secp256k1Server
 
         // Register the worker PID
         $this->workers[$workerPid] = true;
+    }
+
+    /**
+     * @param int $sigId
+     * @return void
+     */
+    private function terminate(int $sigId): void
+    {
+        $this->terminated = true;
+        if ($this->workers) {
+            foreach (array_keys($this->workers) as $workerPid) {
+                posix_kill($workerPid, SIGTERM);
+            }
+        }
+
+        $this->writeLog(sprintf("{green}%s{/} on PID {magenta}%d{/} terminated: {red}%d{/}",
+            $this->workers === null ? "Worker" : "Secp256k1 Server", getmypid(), $sigId));
+
+        if ($this->workers === null) {
+            exit(0);
+        }
     }
 
     /**
