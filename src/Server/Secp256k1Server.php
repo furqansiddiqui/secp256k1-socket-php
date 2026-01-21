@@ -93,10 +93,6 @@ final class Secp256k1Server
         }
 
         while (true) {
-            if ($this->terminated) {
-                break;
-            }
-
             pcntl_signal_dispatch();
             $workerExited = pcntl_wait($status);
             if ($workerExited === -1) {
@@ -109,6 +105,10 @@ final class Secp256k1Server
             }
 
             if ($workerExited > 0) {
+                if ($this->terminated) {
+                    break;
+                }
+
                 // Todo: Log message worker exited
                 unset($this->workers[$workerExited]);
                 $this->spawnWorkerProcess();
