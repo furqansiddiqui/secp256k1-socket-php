@@ -99,6 +99,7 @@ final class Secp256k1Server
 
             pcntl_signal_dispatch();
             $workerExited = pcntl_wait($status);
+            pcntl_signal_dispatch();
             if ($workerExited === -1) {
                 $pcntlError = pcntl_get_last_error();
                 if ($pcntlError !== PCNTL_EINTR) {
