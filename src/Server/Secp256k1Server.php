@@ -20,6 +20,7 @@ final class Secp256k1Server
     /** @var resource|null */
     private $socket = null;
     private ?array $workers = [];
+    private bool $terminated = false;
 
     /**
      * @throws InvalidConfigException
@@ -92,6 +93,10 @@ final class Secp256k1Server
         }
 
         while (true) {
+            if ($this->terminated) {
+                break;
+            }
+
             pcntl_signal_dispatch();
             $workerExited = pcntl_wait($status);
             if ($workerExited === -1) {
@@ -117,6 +122,7 @@ final class Secp256k1Server
      */
     private function terminate(int $sigId): never
     {
+        $this->terminated = true;
         if ($this->workers) {
             foreach (array_keys($this->workers) as $workerPid) {
                 posix_kill($workerPid, SIGTERM);
