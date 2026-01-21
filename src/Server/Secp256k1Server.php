@@ -93,6 +93,10 @@ final class Secp256k1Server
         }
 
         while (true) {
+            if (!$this->workers) {
+                break;
+            }
+
             pcntl_signal_dispatch();
             $workerExited = pcntl_wait($status);
             if ($workerExited === -1) {
@@ -106,18 +110,13 @@ final class Secp256k1Server
 
             if ($workerExited > 0) {
                 unset($this->workers[$workerExited]);
-                if ($this->terminated) {
-                    if (!$this->workers) {
-                        break;
-                    }
-
-                    continue;
+                if (!$this->terminated) {
+                    $this->spawnWorkerProcess();
                 }
-
-                $this->spawnWorkerProcess();
             }
         }
 
+        $this->writeLog(sprintf("{green}Secp256k1 Server{/} on PID {red}%d{/} terminated!", getmypid()));
         exit(0);
     }
 
@@ -161,16 +160,15 @@ final class Secp256k1Server
     private function terminate(int $sigId): void
     {
         $this->terminated = true;
-        if ($this->workers) {
+        if ($this->workers !== null) {
             foreach (array_keys($this->workers) as $workerPid) {
                 posix_kill($workerPid, SIGTERM);
             }
         }
 
-        $this->writeLog(sprintf("{green}%s{/} on PID {magenta}%d{/} terminated: {red}%d{/}",
-            $this->workers === null ? "Worker" : "Secp256k1 Server", getmypid(), $sigId));
-
         if ($this->workers === null) {
+            $this->writeLog(sprintf("{cyan}Worker{/} on PID {magenta}%d{/} terminated: {red}%d{/}",
+                getmypid(), $sigId));
             exit(0);
         }
     }
